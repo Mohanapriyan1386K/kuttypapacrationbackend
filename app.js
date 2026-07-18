@@ -7,6 +7,7 @@ import ProductRoutes from "./routes/ProductRoutes.js"
 import CategoryRoute from "./routes/CategoryRoutes.js";
 import  EnquiryRoutes from "./routes/enquiryRoutes.js"
 import DashboardRouter from "./routes/DashboardRouter.js"
+import Authroute from "./routes/AuthRoute.js"
 
 dotenv.config()
 connectDB();
@@ -17,6 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/Category",CategoryRoute)
 app.use("/api/product",ProductRoutes)
 app.use("/api/enquiry", EnquiryRoutes);
-app.use("/api/dashboard",DashboardRouter)
+app.use("/api/dashboard",DashboardRouter);
+app.use("/api/admin",Authroute);
 
 export default app
