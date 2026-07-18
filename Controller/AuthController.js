@@ -1,4 +1,4 @@
-import Admin from "../Model/Auth.js";
+import Admin from "../model/Auth.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv"
