@@ -2,9 +2,11 @@ import Category from "../model/CategoryModal.js";
 import cloudinary from "../Config/cloudinary.js";
 
 
+
+
 export const createCategory = async (req, res) => {
   try {
-    const { name, status } = req.body;
+    let { name, status, options } = req.body;
 
     const exist = await Category.findOne({ name });
 
@@ -25,16 +27,94 @@ export const createCategory = async (req, res) => {
       image = result.secure_url;
     }
 
+    // If FormData sends options as string
+    if (typeof options === "string") {
+      options = JSON.parse(options);
+    }
+
     const category = await Category.create({
       name,
       image,
       status,
+      options,
     });
 
     res.status(201).json({
       success: true,
       message: "Category created successfully",
       data: category,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+export const updateCategory = async (req, res) => {
+  try {
+    let { name, status, options } = req.body;
+
+    const category = await Category.findById(req.params.id);
+
+    if (!category) {
+      return res.status(404).json({
+        success: false,
+        message: "Category not found",
+      });
+    }
+
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "category",
+      });
+
+      category.image = result.secure_url;
+    }
+
+    if (typeof options === "string") {
+      options = JSON.parse(options);
+    }
+
+    category.name = name;
+    category.status = status;
+    category.options = options;
+
+    await category.save();
+
+    res.json({
+      success: true,
+      message: "Category updated successfully",
+      data: category,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+
+export const deleteCategory = async (req, res) => {
+  try {
+    const category = await Category.findById(req.params.id);
+
+    if (!category) {
+      return res.status(404).json({
+        success: false,
+        message: "Category not found",
+      });
+    }
+
+    await Category.findByIdAndDelete(req.params.id);
+
+    res.json({
+      success: true,
+      message: "Category deleted successfully",
     });
   } catch (error) {
     res.status(500).json({
@@ -89,67 +169,20 @@ export const getCategory = async (req, res) => {
 };
 
 
-export const updateCategory = async (req, res) => {
-  try {
-    const { name, status } = req.body;
-
-    const category = await Category.findById(req.params.id);
-
-    if (!category) {
-      return res.status(404).json({
-        success: false,
-        message: "Category not found",
-      });
-    }
-
-    if (req.file) {
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: "category",
-      });
-
-      category.image = result.secure_url;
-    }
-
-    category.name = name;
-    category.status = status;
-
-    await category.save();
-
-    res.json({
-      success: true,
-      message: "Category updated successfully",
-      data: category,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
 
 
-export const deleteCategory = async (req, res) => {
-  try {
-    const category = await Category.findById(req.params.id);
 
-    if (!category) {
-      return res.status(404).json({
-        success: false,
-        message: "Category not found",
-      });
-    }
 
-    await Category.findByIdAndDelete(req.params.id);
 
-    res.json({
-      success: true,
-      message: "Category deleted successfully",
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+
+
+
+
+
+
+
+
+
+
+
+

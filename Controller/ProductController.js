@@ -22,7 +22,7 @@ export const createProduct = async (req, res) => {
       customizable,
       featured,
       status,
-      instagram
+      instagram,
     } = req.body;
 
     const categoryExist = await Category.findById(category);
@@ -34,7 +34,7 @@ export const createProduct = async (req, res) => {
       });
     }
 
-     const cloudinaryResult = await new Promise((resolve, reject) => {
+    const cloudinaryResult = await new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         { folder: "papakutty" },
         (error, result) => {
@@ -46,20 +46,21 @@ export const createProduct = async (req, res) => {
       stream.end(req.file.buffer);
     });
 
- 
+    const slug = title.toLowerCase().trim().replace(/\s+/g, "-");
 
     const product = await Product.create({
+      slug,
       title,
       category,
       description,
       price,
       offerPrice,
       stock,
-      image:cloudinaryResult.secure_url,
+      image: cloudinaryResult.secure_url,
       customizable,
       featured,
       status,
-      instagram
+      instagram,
     });
 
     res.status(201).json({
@@ -81,6 +82,7 @@ export const getProducts = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const category = req.query.category;
     const search = req.query.search;
+    const slug=req.query.slug;
 
     const skip = (page - 1) * limit;
 
@@ -92,6 +94,12 @@ export const getProducts = async (req, res) => {
     if (search) {
       filter.title = {
         $regex: search,
+        $options: "i",
+      };
+    }
+    if(slug){
+       filter.slug = {
+        $regex: slug,
         $options: "i",
       };
     }
@@ -180,8 +188,11 @@ export const updateProduct = async (req, res) => {
       customizable,
       featured,
       status,
-      instagram
+      instagram,
     } = req.body;
+
+    const slug = title.toLowerCase().trim().replace(/\s+/g, "-");
+
 
     // Upload new image only if provided
     if (req.file) {
@@ -191,7 +202,7 @@ export const updateProduct = async (req, res) => {
           (error, result) => {
             if (error) return reject(error);
             resolve(result);
-          }
+          },
         );
 
         stream.end(req.file.buffer);
@@ -209,7 +220,8 @@ export const updateProduct = async (req, res) => {
     product.customizable = customizable;
     product.featured = featured;
     product.status = status;
-    product.instagram=instagram
+    product.instagram = instagram;
+    product.slug=slug;
 
     await product.save();
 
@@ -226,7 +238,6 @@ export const updateProduct = async (req, res) => {
   }
 };
 
-
 export const updateProductStatus = async (req, res) => {
   try {
     const { status } = req.body;
@@ -234,7 +245,7 @@ export const updateProductStatus = async (req, res) => {
     const product = await Product.findByIdAndUpdate(
       req.params.id,
       { status },
-      { new: true }
+      { new: true },
     );
 
     if (!product) {

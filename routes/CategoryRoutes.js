@@ -21,4 +21,5 @@ router.put("/:id", upload.single("image"), updateCategory);
 
 router.delete("/:id", deleteCategory);
 
+
 export default router;
